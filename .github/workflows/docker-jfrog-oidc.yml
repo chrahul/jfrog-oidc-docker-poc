@@ -21,9 +21,11 @@ jobs:
         id: jfrog
         uses: jfrog/setup-jfrog-cli@v4
         env:
-          JF_URL: http://54.67.82.130:8082   # 🔴 IMPORTANT FIX
+          JF_URL: http://54.67.82.130:8082
+          JFROG_CLI_LOG_LEVEL: DEBUG
         with:
           oidc-provider-name: github-actions-oidc
+          oidc-audience: jfrog   # 🔴 THIS IS THE FIX
 
       - name: Verify JFrog access
         run: jfrog rt ping
