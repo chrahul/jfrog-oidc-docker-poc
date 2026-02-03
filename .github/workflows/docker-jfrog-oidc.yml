@@ -21,7 +21,7 @@ jobs:
         id: jfrog
         uses: jfrog/setup-jfrog-cli@v4
         env:
-          JF_URL: https://<JFROG_HOST>
+          JF_URL: http://54.67.82.130
         with:
           oidc-provider-name: github-actions-oidc
 
@@ -31,14 +31,14 @@ jobs:
       - name: Docker login to JFrog
         run: |
           echo "${{ steps.jfrog.outputs.oidc-token }}" | \
-          docker login <JFROG_HOST>:8082 \
+          docker login 54.67.82.130:8082 \
             --username "${{ steps.jfrog.outputs.oidc-user }}" \
             --password-stdin
 
       - name: Build Docker image
         run: |
-          docker build -t <JFROG_HOST>:8082/platform-docker-virtual/nginx:poc-${{ github.run_number }} .
+          docker build -t 54.67.82.130:8082/platform-docker-virtual/nginx:poc-${{ github.run_number }} .
 
       - name: Push Docker image
         run: |
-          docker push <JFROG_HOST>:8082/platform-docker-virtual/nginx:poc-${{ github.run_number }}
+          docker push 54.67.82.130:8082/platform-docker-virtual/nginx:poc-${{ github.run_number }}
