@@ -21,7 +21,7 @@ jobs:
         id: jfrog
         uses: jfrog/setup-jfrog-cli@v4
         env:
-          JF_URL: http://54.67.82.130:8081
+          JF_URL: http://54.67.82.130:8082   # 🔴 IMPORTANT FIX
         with:
           oidc-provider-name: github-actions-oidc
 
