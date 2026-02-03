@@ -14,42 +14,31 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # 1. Checkout code
-      - name: Checkout repository
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      # 2. OIDC auth to JFrog (NO secrets)
       - name: Setup JFrog CLI via OIDC
         id: jfrog
         uses: jfrog/setup-jfrog-cli@v4
         env:
-          JF_URL: http://54.67.82.130:8082
+          JF_URL: http://54.67.82.130:8081
         with:
           oidc-provider-name: github-actions-oidc
-          oidc-audience: jfrog
 
-      # 3. Prove OIDC worked
-      - name: Verify JFrog authentication
+      - name: Verify JFrog access
         run: jfrog rt ping
 
-      # 4. Docker login (disable TLS verification for IP-based registry)
-      - name: Docker login to JFrog (PoC)
+      - name: Docker login to JFrog
         run: |
           echo "${{ steps.jfrog.outputs.oidc-token }}" | \
           docker login 54.67.82.130:8082 \
             --username "${{ steps.jfrog.outputs.oidc-user }}" \
-            --password-stdin \
-            --tls-verify=false
+            --password-stdin
 
-      # 5. Build image
       - name: Build Docker image
         run: |
-          docker build \
-            -t 54.67.82.130:8082/platform-docker-virtual/nginx:poc-${{ github.run_number }} \
-            .
+          docker build -t 54.67.82.130:8082/platform-docker-virtual/nginx:poc-${{ github.run_number }} .
 
-      # 6. Push image
       - name: Push Docker image
         run: |
-          docker push \
-            54.67.82.130:8082/platform-docker-virtual/nginx:poc-${{ github.run_number }}
+          docker push 54.67.82.130:8082/platform-docker-virtual/nginx:poc-${{ github.run_number }}
