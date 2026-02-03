@@ -5,6 +5,7 @@ on:
     branches:
       - main
 
+# Required for GitHub OIDC
 permissions:
   id-token: write
   contents: read
@@ -14,34 +15,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. Authenticate to JFrog using GitHub OIDC (NO secrets)
       - name: Setup JFrog CLI via OIDC
         id: jfrog
         uses: jfrog/setup-jfrog-cli@v4
         env:
+          # JFrog Router / Platform URL (Access service is here)
           JF_URL: http://54.67.82.130:8082
         with:
           oidc-provider-name: github-actions-oidc
-          oidc-audience: jfrog   # 
+          oidc-audience: jfrog
 
+      # 3. Sanity check – proves OIDC token exchange succeeded
       - name: Verify JFrog authentication
         run: jfrog rt ping
 
+      # 4. Docker login using short-lived OIDC token (FORCE HTTP)
       - name: Docker login to JFrog
         run: |
           echo "${{ steps.jfrog.outputs.oidc-token }}" | \
-          docker login 54.67.82.130:8082 \
+          docker login http://54.67.82.130:8082 \
             --username "${{ steps.jfrog.outputs.oidc-user }}" \
             --password-stdin
 
+      # 5. Build Docker image
       - name: Build Docker image
         run: |
           docker build \
             -t 54.67.82.130:8082/platform-docker-virtual/nginx:poc-${{ github.run_number }} \
             .
 
+      # 6. Push Docker image to JFrog
       - name: Push Docker image
         run: |
           docker push \
